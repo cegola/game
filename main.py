@@ -10,9 +10,10 @@ COLORTEXTO = (193, 13, 23)
 TAM_FUENTE = 12
 TASAMOVIMIENTOJUGADOR = 5
 TASAENEMIGAS = 100
-VELOCIDADMINENEMIGA = 1
-VELOCIDADMAXENEMIGA = 3
+VELOCIDADENEMIGA = 1
 MAXPUNTUACION = "maxima_puntuacion.txt"
+ALTOYAYA = 100
+ANCHOYAYA = 56
 
 shelving_y_pos = 0
 nombreJuego = 'YAYAS ATACK'
@@ -35,12 +36,12 @@ pygame.mouse.set_visible(False)
 # establece los fonts
 font = pygame.font.Font('resources/04B_30__.TTF', 24)
 
-
 # establecemos las imagenes
 bg_surface = pygame.image.load('img/background1.png').convert()
 shelving_surface = pygame.image.load('img/shelving.png').convert()
 
 yaya = pygame.image.load('img/player.png').convert_alpha()
+yaya = pygame.transform.scale(yaya, (ANCHOYAYA, ALTOYAYA))
 rectYaya = yaya.get_rect()
 
 enemies_img = ['img/enemigo1.png', 'img/enemigo2.png', 'img/enemigo3.png']
@@ -98,15 +99,13 @@ def finalizar():
     pygame.quit()
     sys.exit()
 
+
 # dibujamos el texto inicial
 dibujarTexto(str(nombreJuego), font, COLORTEXTO, screen, (ANCHOVENTANA / 2), (ALTOVENTANA / 2) - 50)
 dibujarTexto('Presione una tecla', font, COLORTEXTO, screen, (ANCHOVENTANA / 2), (ALTOVENTANA / 2))
 dibujarTexto('para iniciar el juego', font, COLORTEXTO, screen, (ANCHOVENTANA / 2), (ALTOVENTANA / 2) + 50)
 pygame.display.update()
 esperarTecla()
-
-
-
 
 while True:
     # comienzo del juego
@@ -116,6 +115,7 @@ while True:
     screen.blit(bg_surface, (0, 0))
     rectYaya.topleft = (x, y)
     enemies = []
+    velociodadEnemigo = VELOCIDADENEMIGA
     contEnemy = 0
     moverIzquierda = moverDerecha = False
 
@@ -156,11 +156,19 @@ while True:
         if contEnemy == TASAENEMIGAS:
             contEnemy = 0
             pos = random.randint(0, maxEnemies)
-            newEnemy = {'rect': pygame.Rect(random.randint(90, ANCHOVENTANA - 180), -90, 90, 90),
-                        'speed': random.randint(VELOCIDADMINENEMIGA, VELOCIDADMAXENEMIGA),
-                        'surface': pygame.image.load(enemies_img[pos]).convert_alpha()}
+            # Rect(left, top, width, height) -> Rect
+            newEnemy = {
+                'rect': pygame.Rect(random.randint(90, ANCHOVENTANA - 90 - ANCHOYAYA), -ALTOYAYA, ANCHOYAYA, ALTOYAYA),
+                'speed': velociodadEnemigo,
+                'surface': pygame.transform.scale(pygame.image.load(enemies_img[pos]).convert_alpha(),
+                                                  (ANCHOYAYA, ALTOYAYA))}
 
             enemies.append(newEnemy)
+
+        # aumentar velocidad enemigo según pasa el tiempo
+        if (velociodadEnemigo % 1000 == 0):
+            velociodadEnemigo += 1
+            print(velociodadEnemigo)
 
         # mueve los enemigos hacia abajo
         for i in enemies:
@@ -184,7 +192,7 @@ while True:
         # dibujamos los puntos
         # dibujarTexto('Vidas: %s' % (vidas), font, screen, 150, 10)
         dibujarTexto('Puntos: %s' % (ptos), font, COLORTEXTO, screen, 350, 10)
-        dibujarTexto('Records: %s' % (puntMax), font,COLORTEXTO, screen,  350, 40)
+        dibujarTexto('Records: %s' % (puntMax), font, COLORTEXTO, screen, 350, 40)
 
         # dibuja los enemigos
         for i in enemies:
@@ -203,7 +211,8 @@ while True:
 
     # acabar juego
     screen.fill(BLACK)
-    dibujarTexto('Maxima puntuacion: ' + str(puntMax), font, COLORTEXTO, screen, (ANCHOVENTANA / 2), (ALTOVENTANA / 2) - 50)
+    dibujarTexto('Maxima puntuacion: ' + str(puntMax), font, COLORTEXTO, screen, (ANCHOVENTANA / 2),
+                 (ALTOVENTANA / 2) - 50)
     dibujarTexto('Game over', font, COLORTEXTO, screen, (ANCHOVENTANA / 2), (ALTOVENTANA / 2))
     dibujarTexto('Presione para repetir', font, COLORTEXTO, screen, (ANCHOVENTANA / 2), (ALTOVENTANA / 2) + 50)
     guardar_datos()
